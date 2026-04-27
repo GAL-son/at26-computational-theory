@@ -1,0 +1,37 @@
+# --- Środowisko wirtualne (Najważniejsze!) ---
+# Ignorujemy folder z bibliotekami, niezależnie od tego jak go nazwiesz
+venv/
+.venv/
+env/
+ENV/
+lib/
+lib64/
+bin/
+include/
+
+# --- Python - pliki tymczasowe ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# --- VS Code ---
+# Ignorujemy folder ustawień lokalnych (ścieżki do interpretera itp.)
+.vscode/
+# Jeśli chcesz zachować konfigurację debuggera, odkomentuj poniższe:
+# !.vscode/launch.json
+
+# --- Jupyter Notebook ---
+.ipynb_checkpoints
+
+# --- Pliki systemowe ---
+.DS_Store
+Thumbs.db
+.directory
+
+# --- Dane i logi ---
+*.log
+# Jeśli trzymasz dane irysa w csv, możesz je zignorować, 
+# aby nie zaśmiecać repozytorium (opcjonalnie)
+# *.csv
