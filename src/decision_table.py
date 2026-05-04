@@ -95,3 +95,33 @@ class DecisionTable:
 
         return upper_approximation
     
+    def get_positive_region(self, subset: set, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            if not set(conditionals).issubset(set(self.c_cols)):
+                raise ValueError("conditionals must be a subset of the defined conditional columns")
+
+        return self.get_lower_approximation(subset, conditionals)
+    
+    def get_boundary_region(self, subset: set, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            if not set(conditionals).issubset(set(self.c_cols)):
+                raise ValueError("conditionals must be a subset of the defined conditional columns")
+
+        lower_approximation = self.get_lower_approximation(subset, conditionals)
+        upper_approximation = self.get_upper_approximation(subset, conditionals)
+        return upper_approximation - lower_approximation
+    
+    def get_negative_region(self, subset: set, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            if not set(conditionals).issubset(set(self.c_cols)):
+                raise ValueError("conditionals must be a subset of the defined conditional columns")
+
+        upper_approximation = self.get_upper_approximation(subset, conditionals)
+        universe = set(self.get_universe())
+        return universe - upper_approximation
