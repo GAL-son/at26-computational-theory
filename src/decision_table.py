@@ -309,6 +309,18 @@ class DecisionTable:
             
         return reduct_list
 
+    def is_attribute_essential(self, attribute: str, conditionals_subset: list[str] = None):
+        conditionals_subset = self._handle_conditionals(conditionals_subset)
+
+        if attribute not in conditionals_subset:
+            raise ValueError("Attribute must be part of the conditional subset")
+
+        equivalence_class = self.get_equivalence_classes(conditionals_subset)
+        reduced_subset = list(set(conditionals_subset) - {attribute})
+        reduced_equivalence_class = self.get_equivalence_classes(reduced_subset)
+
+        return equivalence_class != reduced_equivalence_class
+
     def _handle_conditionals(self, conditionals):
         if conditionals is None:
             return self.c_cols
