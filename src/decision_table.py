@@ -1,3 +1,5 @@
+from itertools import combinations
+
 import pandas as pd
 
 from enum import Enum, auto
@@ -200,7 +202,7 @@ class DecisionTable:
             for key, subset in subsets.items()
         }.values()
     
-    def get_subset_family_positive_regionn(self, subsets: dict, conditionals: list[str] = None):
+    def get_subset_family_positive_region(self, subsets: dict, conditionals: list[str] = None):
         if conditionals is None:
             conditionals = self.c_cols
         else:
@@ -214,7 +216,7 @@ class DecisionTable:
         else:
             self._check_conditionals(conditionals)
 
-        positive_region = self.get_subset_family_positive_regionn(subsets, conditionals)
+        positive_region = self.get_subset_family_positive_region(subsets, conditionals)
         universe = set(self.get_universe())
         if not universe:
             return 0.0
@@ -229,7 +231,7 @@ class DecisionTable:
         sum_of_lenghts_of_upper_approximations = sum(len(self.get_upper_approximation(subset, conditionals)) for subset in subsets.values())
         if sum_of_lenghts_of_upper_approximations == 0:
             return 0.0
-        positive_region = self.get_subset_family_positive_regionn(subsets, conditionals)
+        positive_region = self.get_subset_family_positive_region(subsets, conditionals)
         return len(positive_region) / sum_of_lenghts_of_upper_approximations
     
     def get_subsets_family_dependability(self, subsets: list[set], conditionals: list[str] = None):
@@ -238,11 +240,44 @@ class DecisionTable:
         else:
             self._check_conditionals(conditionals)
 
-        positive_region = self.get_subset_family_positive_regionn(subsets, conditionals)
+        positive_region = self.get_subset_family_positive_region(subsets, conditionals)
         universe = set(self.get_universe())
         if not universe:
             return 0.0
         return len(positive_region) / len(universe)
+
+    def is_subset_independent(self, conditional_subset: list[str] = None):
+        conditional_subset = self._handle_conditionals(conditional_subset)
+
+        equivalence_classes = self.get_equivalence_classes(conditional_subset)  
+
+        for attr in conditional_subset:
+            reduced_subset = list(set(conditional_subset) - {attr})
+            subset_equivalence_classes = self.get_equivalence_classes(reduced_subset)
+            if equivalence_classes == subset_equivalence_classes:
+                return False  
+            
+        return True
+
+    def is_subset_conditionally_independent(self, conditional_relation: dict, conditionals_subset: list[str] = None):
+        conditionals_subset = self._handle_conditionals(conditionals_subset)
+
+        positive_region = self.get_subset_family_positive_region(conditional_relation, conditionals_subset)
+
+        for attr in conditionals_subset:
+            reduced_subset = list(set(conditionals_subset) - {attr})
+            reduced_positive_region = self.get_subset_family_positive_region(conditional_relation, reduced_subset)
+            if positive_region == reduced_positive_region:
+                return False    
+        
+        return True
+
+    def _handle_conditionals(self, conditionals):
+        if conditionals is None:
+            return self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+            return conditionals
 
     def _check_conditionals(self, conditionals):
         if not set(conditionals).issubset(set(self.c_cols)):
