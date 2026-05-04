@@ -177,7 +177,67 @@ class DecisionTable:
             return 0.0
         return len(lower_approximation) / len(upper_approximation)
 
+    # def get_subsets_dependability(self, subsets: list[set], conditionals: list[str] = None):
+
+    def get_subset_family_lower_approximations(self, subsets: dict, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        # Iterujemy po items(), zachowując oryginalny klucz (np. 'X1')
+        return {
+            key: self.get_lower_approximation(subset, conditionals) 
+            for key, subset in subsets.items()
+        }.values()
+
+    def get_subset_family_upper_approximations(self, subsets: dict, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        return {
+            key: self.get_upper_approximation(subset, conditionals) 
+            for key, subset in subsets.items()
+        }.values()
+    
+    def get_subset_family_positive_regionn(self, subsets: dict, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        return set().union(*(self.get_positive_region(subset, conditionals) for subset in subsets.values()))
+    
+    def get_subset_family_quality_of_approximations(self, subsets: dict, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        positive_region = self.get_subset_family_positive_regionn(subsets, conditionals)
+        universe = set(self.get_universe())
+        if not universe:
+            return 0.0
+        return len(positive_region) / len(universe)
+    
+    def get_subset_family_accuracy_of_approximations(self, subsets: dict, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        sum_of_lenghts_of_upper_approximations = sum(len(self.get_upper_approximation(subset, conditionals)) for subset in subsets.values())
+        if sum_of_lenghts_of_upper_approximations == 0:
+            return 0.0
+        positive_region = self.get_subset_family_positive_regionn(subsets, conditionals)
+        return len(positive_region) / sum_of_lenghts_of_upper_approximations
+    
+
     def _check_conditionals(self, conditionals):
         if not set(conditionals).issubset(set(self.c_cols)):
             raise ValueError("Conditionals must be a subset of the defined conditional columns")
+        
+    
         
