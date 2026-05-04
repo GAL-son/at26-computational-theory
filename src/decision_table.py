@@ -321,12 +321,23 @@ class DecisionTable:
 
         return equivalence_class != reduced_equivalence_class
 
+    def get_core_attributes(self, conditionals_subset: list[str] = None):
+        conditionals_subset = self._handle_conditionals(conditionals_subset)
+
+        core_attributes = []
+        for attr in conditionals_subset:
+            if self.is_attribute_essential(attr, conditionals_subset):
+                core_attributes.append(attr)
+
+        return core_attributes
+
     def _handle_conditionals(self, conditionals):
         if conditionals is None:
             return self.c_cols
         else:
             self._check_conditionals(conditionals)
             return conditionals
+            
 
     def _check_conditionals(self, conditionals):
         if not set(conditionals).issubset(set(self.c_cols)):
