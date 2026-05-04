@@ -23,10 +23,15 @@ class InformationSystem:
             raise ValueError("q_cols must be a subset of df columns")
         
     def get_universe(self):
-        return set(self.df[self.u_col])
+        return self.df[self.u_col].unique()
 
     def get_attributes(self):
-        return set(self.a_cols)
+        return self.a_cols
+
+    def get_attribute_values(self, attribute: str):
+        if attribute not in self.a_cols:
+            raise ValueError("Attribute must be one of the defined attribute columns")
+        return self.df[attribute].unique()
     
     
 
