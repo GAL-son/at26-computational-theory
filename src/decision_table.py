@@ -330,6 +330,28 @@ class DecisionTable:
                 core_attributes.append(attr)
 
         return core_attributes
+    
+    def get_decision_equivalence_classes(self):
+        
+        decision_equivalence_classes = []
+        for decision_value in self.get_decision_values():
+            objects_with_decision_value = self.get_objects_with_decision_value(decision_value)
+            decision_equivalence_classes.append(objects_with_decision_value)
+
+        return decision_equivalence_classes
+
+    def get_normalised_attriburte_set_significance(self, conditionals_subset: list[str] = None):
+        conditionals_subset = self._handle_conditionals(conditionals_subset)
+
+        approximation_quality = self.get_subset_family_quality_of_approximations({key: eq for key, eq in enumerate(self.get_decision_equivalence_classes())})
+
+        subset_aproximation_quality = self.get_subset_family_quality_of_approximations(
+            {key: eq for key, eq in enumerate(self.get_decision_equivalence_classes())}, 
+            set(self.get_conditionals()) - set(conditionals_subset))
+
+        if approximation_quality == 0:
+            return 0.0
+        return (approximation_quality - subset_aproximation_quality) / approximation_quality
 
     def _handle_conditionals(self, conditionals):
         if conditionals is None:
