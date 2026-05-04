@@ -1,5 +1,16 @@
 import pandas as pd
 
+from enum import Enum, auto
+class Definability(Enum):
+    DEFINABLE = auto() # Odpowiada Twojemu C-dokładny (Exact set)
+    ROUGH = auto()
+
+class DefinibilityType(Enum):
+    ROUGHLY_DEFINABLE = auto()        
+    INTERNALLY_NON_DEFINABLE = auto() 
+    EXTERNALLY_NON_DEFINABLE = auto() 
+    TOTALLY_NON_DEFINABLE = auto()    
+
 class DecisionTable:
     def __init__(self, df: pd.DataFrame, universe_column: str, decision_attribute: str, conditional_columns: list[str] = None):
         self.df = df
@@ -40,8 +51,7 @@ class DecisionTable:
         if conditionals is None:
             conditionals = self.c_cols
         else:
-            if not set(conditionals).issubset(set(self.c_cols)):
-                raise ValueError("conditionals must be a subset of the defined conditional columns")
+            self._check_conditionals(conditionals)
 
         if self.cache_enabled and self.equivalence_classes_cache is not None:
             cached_result = self.equivalence_classes_cache.get(hash(frozenset(conditionals)))
@@ -69,8 +79,7 @@ class DecisionTable:
         if conditionals is None:
             conditionals = self.c_cols
         else:
-            if not set(conditionals).issubset(set(self.c_cols)):
-                raise ValueError("conditionals must be a subset of the defined conditional columns")
+            self._check_conditionals(conditionals)
 
         equivalence_classes = self.get_equivalence_classes(conditionals)
         lower_approximation = set()
@@ -84,8 +93,7 @@ class DecisionTable:
         if conditionals is None:
             conditionals = self.c_cols
         else:
-            if not set(conditionals).issubset(set(self.c_cols)):
-                raise ValueError("conditionals must be a subset of the defined conditional columns")
+            self._check_conditionals(conditionals)
 
         equivalence_classes = self.get_equivalence_classes(conditionals)
         upper_approximation = set()
@@ -99,8 +107,7 @@ class DecisionTable:
         if conditionals is None:
             conditionals = self.c_cols
         else:
-            if not set(conditionals).issubset(set(self.c_cols)):
-                raise ValueError("conditionals must be a subset of the defined conditional columns")
+            self._check_conditionals(conditionals)
 
         return self.get_lower_approximation(subset, conditionals)
     
@@ -108,8 +115,7 @@ class DecisionTable:
         if conditionals is None:
             conditionals = self.c_cols
         else:
-            if not set(conditionals).issubset(set(self.c_cols)):
-                raise ValueError("conditionals must be a subset of the defined conditional columns")
+            self._check_conditionals(conditionals)
 
         lower_approximation = self.get_lower_approximation(subset, conditionals)
         upper_approximation = self.get_upper_approximation(subset, conditionals)
@@ -119,9 +125,45 @@ class DecisionTable:
         if conditionals is None:
             conditionals = self.c_cols
         else:
-            if not set(conditionals).issubset(set(self.c_cols)):
-                raise ValueError("conditionals must be a subset of the defined conditional columns")
+            self._check_conditionals(conditionals)
 
         upper_approximation = self.get_upper_approximation(subset, conditionals)
         universe = set(self.get_universe())
         return universe - upper_approximation
+    
+    def get_set_definability(self, subset: set, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        lower_approximation = self.get_lower_approximation(subset, conditionals)
+        upper_approximation = self.get_upper_approximation(subset, conditionals)
+
+        if lower_approximation == upper_approximation:
+            return Definability.DEFINABLE
+        else:
+            return Definability.ROUGH
+        
+    def get_definibility_type(self, subset: set, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        lower_approximation = self.get_lower_approximation(subset, conditionals)
+        upper_approximation = self.get_upper_approximation(subset, conditionals)
+
+        universe = set(self.get_universe())
+        if lower_approximation and upper_approximation != universe:
+            return DefinibilityType.ROUGHLY_DEFINABLE
+        elif not lower_approximation and upper_approximation != universe:
+            return DefinibilityType.INTERNALLY_NON_DEFINABLE
+        elif lower_approximation and upper_approximation == universe:
+            return DefinibilityType.EXTERNALLY_NON_DEFINABLE
+        else:
+            return DefinibilityType.TOTALLY_NON_DEFINABLE
+
+    def _check_conditionals(self, conditionals):
+        if not set(conditionals).issubset(set(self.c_cols)):
+            raise ValueError("Conditionals must be a subset of the defined conditional columns")
