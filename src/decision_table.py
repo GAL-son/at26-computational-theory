@@ -163,7 +163,21 @@ class DecisionTable:
             return DefinibilityType.EXTERNALLY_NON_DEFINABLE
         else:
             return DefinibilityType.TOTALLY_NON_DEFINABLE
+        
+    def get_aproximation_quality(self, subset: set, conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        lower_approximation = self.get_lower_approximation(subset, conditionals)
+        upper_approximation = self.get_upper_approximation(subset, conditionals)
+
+        if not upper_approximation:
+            return 0.0
+        return len(lower_approximation) / len(upper_approximation)
 
     def _check_conditionals(self, conditionals):
         if not set(conditionals).issubset(set(self.c_cols)):
             raise ValueError("Conditionals must be a subset of the defined conditional columns")
+        
