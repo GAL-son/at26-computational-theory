@@ -271,6 +271,43 @@ class DecisionTable:
                 return False    
         
         return True
+    
+    def get_attribute_reducts(self, conditionals_subset: list[str] = None):
+        conditionals_subset = self._handle_conditionals(conditionals_subset)
+
+        if self.is_subset_independent(conditionals_subset):
+            return None
+
+        equivalence_class = self.get_equivalence_classes(conditionals_subset)
+        reduct_list = []
+
+
+        for attr in conditionals_subset:
+            reduced_subset = list(set(conditionals_subset) - {attr})
+            
+            reduced_equivalence_class = self.get_equivalence_classes(reduced_subset)
+            if equivalence_class == reduced_equivalence_class and self.is_subset_independent(reduced_subset):
+                reduct_list.append(reduced_subset)
+            
+        return reduct_list
+    
+    def get_relative_reducts(self, conditional_relation: dict, conditionals_subset: list[str] = None):
+        conditionals_subset = self._handle_conditionals(conditionals_subset)
+
+        if self.is_subset_conditionally_independent(conditional_relation, conditionals_subset):
+            return None
+
+        equivalence_class = self.get_equivalence_classes(conditionals_subset)
+        reduct_list = []
+
+        for attr in conditionals_subset:
+            reduced_subset = list(set(conditionals_subset) - {attr})
+            
+            reduced_eqivalence_class = self.get_equivalence_classes(reduced_subset)
+            if equivalence_class == reduced_eqivalence_class and self.is_subset_conditionally_independent(conditional_relation, reduced_subset):
+                reduct_list.append(reduced_subset)
+            
+        return reduct_list
 
     def _handle_conditionals(self, conditionals):
         if conditionals is None:
