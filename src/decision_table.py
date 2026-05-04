@@ -177,8 +177,6 @@ class DecisionTable:
             return 0.0
         return len(lower_approximation) / len(upper_approximation)
 
-    # def get_subsets_dependability(self, subsets: list[set], conditionals: list[str] = None):
-
     def get_subset_family_lower_approximations(self, subsets: dict, conditionals: list[str] = None):
         if conditionals is None:
             conditionals = self.c_cols
@@ -234,6 +232,17 @@ class DecisionTable:
         positive_region = self.get_subset_family_positive_regionn(subsets, conditionals)
         return len(positive_region) / sum_of_lenghts_of_upper_approximations
     
+    def get_subsets_family_dependability(self, subsets: list[set], conditionals: list[str] = None):
+        if conditionals is None:
+            conditionals = self.c_cols
+        else:
+            self._check_conditionals(conditionals)
+
+        positive_region = self.get_subset_family_positive_regionn(subsets, conditionals)
+        universe = set(self.get_universe())
+        if not universe:
+            return 0.0
+        return len(positive_region) / len(universe)
 
     def _check_conditionals(self, conditionals):
         if not set(conditionals).issubset(set(self.c_cols)):
